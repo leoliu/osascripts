@@ -1,10 +1,10 @@
-;;; applescript.el --- applescript wrapper           -*- lexical-binding: t; -*-
+;;; osa.el --- OSA script wrapper                    -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2015  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 0.5.0
-;; Keywords: languages, tools
+;; Version: 0.6.0
+;; Keywords: OSA, languages, tools
 ;; Created: 2013-09-08
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -22,38 +22,39 @@
 
 ;;; Commentary:
 
-;; Make `do-applescript' easier to use.
-;;
 ;; AppleScript Guide: search 'applescript' in
-;; http://developer.apple.com/library/mac/navigation
+;;      http://developer.apple.com/library/mac/navigation
+;;
+;; JavaScript for Automation:
+;;      https://developer.apple.com/videos/wwdc/2014/?id=403
 
 ;;; Code:
 
-(defgroup applescript nil
-  "The AppleScript programming language."
+(defgroup osa nil
+  "OSA scripts (AppleScript, JavaScript etc)."
   :group 'languages)
 
-(defcustom applescript-debug nil
-  "Non-nil to log the AppleScript string."
+(defcustom osa-debug nil
+  "Non-nil to log the OSA script string."
   :type 'boolean
-  :group 'applescript)
+  :group 'osa)
 
-(defconst applescript-lisp-start "#{"
+(defconst osa-lisp-start "#{"
   "String marking the start of lisp code.")
 
-(defconst applescript-lisp-end "}"
+(defconst osa-lisp-end "}"
   "String marking the end of lisp code.")
 
-(defvar applescript-lisp-re
-  (concat (regexp-quote applescript-lisp-start)
+(defvar osa-lisp-re
+  (concat (regexp-quote osa-lisp-start)
           "\\(\\(?:.\\|\n\\)*?\\)\\(?:#\\(.\\)\\)?"
-          (regexp-quote applescript-lisp-end)))
+          (regexp-quote osa-lisp-end)))
 
-(defun applescript-parse-line (line)
+(defun osa-parse-line (line)
   (let ((start 0)
         (lisp-code))
     (when (stringp line)
-      (while (string-match applescript-lisp-re line start)
+      (while (string-match osa-lisp-re line start)
         (push (condition-case err
                   (read (match-string 1 line))
                 (error (error "%s: %s" (error-message-string err) line)))
@@ -66,18 +67,11 @@
         (cons 'format (cons line (nreverse lisp-code)))
       line)))
 
-(defun applescript-parse-lines (lines)
-  (mapcar #'applescript-parse-line lines))
+(defun osa-parse-lines (lines)
+  (mapcar #'osa-parse-line lines))
 
-(defun applescript-strings-p (ss)
-  "Return non-nil if SS contains only strings."
-  (cond
-   ((null ss) t)
-   ((stringp (car ss))
-    (applescript-strings-p (cdr ss)))))
-
-(defmacro applescript-debug (form)
-  (if applescript-debug
+(defmacro osa-debug (form)
+  (if osa-debug
       (let ((-value- (make-symbol "-value-")))
         `(let ((,-value- ,form))
            (message "DEBUG [%s]: \n%s"
@@ -86,22 +80,32 @@
            ,-value-))
     form))
 
+(defun osa-build-script (lines)
+  (let ((lines (osa-parse-lines lines)))
+    (cond
+     ((cl-every #'stringp lines) (mapconcat 'identity lines "\n"))
+     ((not (cdr lines))          (car lines))
+     (t                          `(mapconcat 'identity (list ,@lines) "\n")))))
+
 ;;;###autoload
-(defmacro applescript (&rest lines)
+(define-obsolete-function-alias 'applescript 'osa "2015-03-18")
+
+;;;###autoload
+(defmacro osa (&rest lines)
   "Like `do-applescript' but allow embedding lisp code.
 The value of the lisp code is interpolated in the applescript
 string using format control string `%S'. It can also be specified
 by appending `#C' where C is one of the chars supported by
 `format'. Examples: \"#{fill-column}\" and \"#{fill-column#x}\"."
-  (let* ((lines (applescript-parse-lines lines))
-         (form (cond
-                ((applescript-strings-p lines)
-                 (mapconcat 'identity lines "\n"))
-                ((not (cdr lines)) (car lines))
-                (t `(mapconcat 'identity (list ,@lines) "\n")))))
-    ;; Check doc-string of `do-applescript' to see why
-    ;; `string-to-multibyte' is needed.
-    `(do-applescript (applescript-debug (string-to-multibyte ,form)))))
+  ;; Check doc-string of `do-applescript' to see why
+  ;; `string-to-multibyte' is needed.
+  `(do-applescript (osa-debug (string-to-multibyte ,(osa-build-script lines)))))
 
-(provide 'applescript)
-;;; applescript.el ends here
+;;;###autoload
+(defmacro osajs (&rest lines)
+  "Like `osa' (which see) but use JavaScript instead."
+  `(mac-osa-script (osa-debug (string-to-multibyte ,(osa-build-script lines)))
+                   "JavaScript"))
+
+(provide 'osa)
+;;; osa.el ends here

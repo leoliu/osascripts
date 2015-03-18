@@ -9,12 +9,12 @@ all: $(ELCFILES) autoloads
 autoloads:
 	@$(EMACS) -batch -q -no-site-file -L . -l autoload \
 	--eval '(setq backup-inhibited t)' \
-	--eval '(setq generated-autoload-file "$(PWD)/applescript-loaddefs.el")' \
+	--eval '(setq generated-autoload-file "$(PWD)/osascripts-loaddefs.el")' \
 	-f batch-update-autoloads .
 
 %.elc : %.el
 	@echo Compiling $<
-	@$(EMACS) -batch -q -no-site-file -f batch-byte-compile $<
+	@$(EMACS) -batch -q -no-site-file -L . -f batch-byte-compile $<
 
 clean:
 	@rm -f *.elc
