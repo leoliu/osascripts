@@ -26,14 +26,14 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'applescript))
+(eval-when-compile (require 'osa))
 (require 'cl-lib)
 
 (require 'org)
 (require 'org-element)
 
 (defun Reminders-accounts ()
-  (let ((a (split-string (read (applescript
+  (let ((a (split-string (read (osa
                                 "set AppleScript's text item delimiters to {\"----\"}
 tell application \"Reminders\"
   set XX to {}
@@ -50,7 +50,7 @@ end tell"))
     (mapcar (lambda (x) (split-string x "----")) a)))
 
 (defun Reminders-lists (account)
-  (let ((l (split-string (read (applescript "\
+  (let ((l (split-string (read (osa "\
 set AppleScript's text item delimiters to {\"----\"}
 tell application \"Reminders\"
   set XX to {}
@@ -120,8 +120,8 @@ end reminderProps")
 ;;; (Reminders-reminders-1 "iCloud" "Reminders")
 (defun Reminders-reminders-1 (account list &optional qs)
   "Return all reminders in LIST of ACCOUNT."
-  (let ((rs (split-string (read (applescript Reminders-ut-handler
-                                             Reminders-reminderProps-handler "\
+  (let ((rs (split-string (read (osa Reminders-ut-handler
+                                     Reminders-reminderProps-handler "\
 tell application \"Reminders\"
   set myReminders to {}
   set myRemindersRef to a reference to myReminders
@@ -161,10 +161,10 @@ end tell"))
                                &allow-other-keys)
       data
     (let ((priority (or priority 0)))
-      (read (applescript Reminders-ut-handler
-                         Reminders-dateFromUT-handler
-                         Reminders-reminderProps-handler
-                         "set nil to missing value
+      (read (osa Reminders-ut-handler
+                 Reminders-dateFromUT-handler
+                 Reminders-reminderProps-handler
+                 "set nil to missing value
 tell application \"Reminders\"
   if #{container} is not missing value then
     set l to first list whose id is #{container}
@@ -351,7 +351,7 @@ end tell")))))
                                 (yes-or-no-p "Delete this reminder? "))
                        (org-entry-get (point) "reminder-id"))))
     (if (not reminder-id) ad-do-it
-      (applescript "tell application \"Reminders\" to delete \
+      (osa "tell application \"Reminders\" to delete \
  (first reminder whose id is #{reminder-id})")
       (kill-region (point) (progn (org-end-of-subtree t t) (point))))))
 
@@ -364,7 +364,7 @@ end tell")))))
   (prog1 (if (consp props)
              (Reminders-update (cl-list* :name name :body body props))
            ;; Optimise for a common case.
-           (applescript "\
+           (osa "\
 tell application \"Reminders\"
   set nil to missing value
   if #{body} is missing value then

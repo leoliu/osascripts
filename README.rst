@@ -1,13 +1,12 @@
-========================
- AppleScripts for Emacs
-========================
+=======================
+ OSA Scripts for Emacs
+=======================
+ 
+A collection of OSA scripts. This repo was moved from `AppleScripts
+<https://github.com/leoliu/applescripts>`_.
 
-This collection of applescript-based elisp functions was born mostly
-out of the need to access personal data from anywhere, which has
-become increasingly important in this mobile and cloud age.
-
-AppleScripts
-~~~~~~~~~~~~
+OSA Scripts
+~~~~~~~~~~~
 
 A dumping ground for smallish AppleScripts:
 

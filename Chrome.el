@@ -24,16 +24,16 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'applescript))
+(eval-when-compile (require 'osa))
 (require 'cl-lib)
 
 (defcustom Chrome-application-name "Google Chrome Canary"
   "Chrome application name."
   :type 'string
-  :group 'applescript)
+  :group 'osa)
 
 (defun Chrome-read-tab ()
-  (let ((tabs (split-string (read (applescript "
+  (let ((tabs (split-string (read (osa "
 tell application #{Chrome-application-name}
   set allTabs to {}
   repeat with w in windows
@@ -50,7 +50,7 @@ end tell"))
 ;;;###autoload
 (defun Chrome-reload (&optional tab)
   (interactive (and current-prefix-arg (list (Chrome-read-tab))))
-  (applescript "tell application #{Chrome-application-name}
+  (osa "tell application #{Chrome-application-name}
 set nil to missing value
   if #{tab} is missing value then
     set x to active tab of front window
@@ -65,7 +65,7 @@ end tell"))
   (let ((url (substring-no-properties url))
         (prefix (substring-no-properties prefix))
         (background (if background "true" "false")))
-    (applescript "tell application #{Chrome-application-name}
+    (osa "tell application #{Chrome-application-name}
   try
     set x to (first tab of front window whose URL starts with #{prefix})
   on error

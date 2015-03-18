@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'applescript))
+(eval-when-compile (require 'osa))
 (require 'cl-lib)
 (require 'shr)
 
@@ -37,7 +37,7 @@
 (defcustom Notes-default-folder "Notes"
   "Default folder to create a new note."
   :type 'string
-  :group 'applescript)
+  :group 'osa)
 
 (defconst Notes-ut-handler "\
 -- date string is locale-dependent so converted to unix time
@@ -72,7 +72,7 @@ end dateFromUT")
 
 (defun Notes-accounts ()
   "Return a list of account names."
-  (let ((a (split-string (read (applescript "\
+  (let ((a (split-string (read (osa "\
 tell application \"Notes\"
   set XX to {}
   set AppleScript's text item delimiters to {\"----\"}
@@ -88,7 +88,7 @@ end tell"))
 
 (defun Notes-folders (account)
   "Return a list of folder names in ACCOUNT."
-  (let ((f (split-string (read (applescript "\
+  (let ((f (split-string (read (osa "\
 tell application \"Notes\"
   set FF to {}
   set AppleScript's text item delimiters to {\"----\"}
@@ -112,8 +112,8 @@ end tell"))
 
 ;; (Notes-notes-1 "iCloud" "Notes")
 (defun Notes-notes-1 (account folder)
-  (let ((notes (split-string (read (applescript Notes-ut-handler
-                                                "\
+  (let ((notes (split-string (read (osa Notes-ut-handler
+                                        "\
 tell application \"Notes\"
   set AppleScript's text item delimiters to {\"----\"}
   set myNotes to {}
@@ -146,9 +146,9 @@ end tell"))
   (cl-destructuring-bind (&key note-id name body container modification-date
                                &allow-other-keys)
       data
-    (read (applescript Notes-ut-handler
-                       Notes-dateFromUT-handler
-                       "\
+    (read (osa Notes-ut-handler
+               Notes-dateFromUT-handler
+               "\
 tell application \"Notes\"
   set nil to missing value
   if #{container} is missing value then
@@ -193,15 +193,15 @@ end tell"))))
 (defun Notes-from-org-data (data)
   (let ((n (make-symbol "note")))
     (org-element-map data '(headline node-property)
-      (lambda (x)
-        (pcase (car x)
-          (`headline
-           (when (eq (org-element-property :level x)
-                     (org-reduced-level (org-current-level)))
-             (put n :name (org-element-property :raw-value x))))
-          (`node-property
-           (put n (intern (concat ":" (org-element-property :key x)))
-                (org-element-property :value x))))))
+                     (lambda (x)
+                       (pcase (car x)
+                         (`headline
+                          (when (eq (org-element-property :level x)
+                                    (org-reduced-level (org-current-level)))
+                            (put n :name (org-element-property :raw-value x))))
+                         (`node-property
+                          (put n (intern (concat ":" (org-element-property :key x)))
+                               (org-element-property :value x))))))
     (symbol-plist n)))
 
 (defun Notes-export-org-subtree ()
@@ -344,7 +344,7 @@ end tell"))))
                             (yes-or-no-p "Delete this note? "))
                    (org-entry-get (point) "note-id"))))
     (if (not note-id) ad-do-it
-      (applescript "tell application \"Notes\" to \
+      (osa "tell application \"Notes\" to \
 delete (first note whose id is #{note-id})")
       (Notes-kill-org-subtree))))
 
@@ -415,7 +415,7 @@ If region is active it is used for BODY."
                      (error "No existing note at point")))
         (print-escape-newlines nil))
     (with-output-to-temp-buffer "*note-html*"
-      (princ (read (applescript "\
+      (princ (read (osa "\
 tell application \"Notes\" to get body of note id #{note-id}"))))))
 
 (provide 'Notes)

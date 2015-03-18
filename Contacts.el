@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'applescript))
+(eval-when-compile (require 'osa))
 
 (eval-and-compile
   (or (fboundp 'user-error)
@@ -34,7 +34,7 @@
 
 (defun Contacts-groups ()
   "List of contact groups."
-  (split-string (read (applescript "\
+  (split-string (read (osa "\
 tell application \"Contacts\"
   set gs to {}
   repeat with g in groups
@@ -48,7 +48,7 @@ end tell"))
 (defcustom Contacts-query-limit 30
   "Maximum number of entries returned by `Contacts-query'."
   :type 'integer
-  :group 'applescript)
+  :group 'osa)
 
 ;;;###autoload
 (defun Contacts-query (string &optional group)
@@ -62,7 +62,7 @@ Allow the user to choose a GROUP to query when called with prefix."
                   (completing-read "Which group: " (Contacts-groups) nil t)))
      (ignore (message "Pulling contacts from Contacts...") (sit-for 0.1))))
 
-  (let ((result (split-string (read (applescript "\
+  (let ((result (split-string (read (osa "\
 tell application \"Contacts\"
   set thePeople to {}
   set nil to missing value

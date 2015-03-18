@@ -1,10 +1,10 @@
-;;; AppleScripts.el --- collection of smallish AppleScripts  -*- lexical-binding: t; -*-
+;;; osascripts.el --- collection of smallish OSA scripts  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2015  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 0.5.0
-;; Keywords: tools, extensions, languages
+;; Version: 0.6.0
+;; Keywords: OSA, languages, tools, extensions
 ;; Created: 2013-09-10
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'applescript))
+(eval-when-compile (require 'osa))
 (require 'cl-lib)
 
 (eval-and-compile
@@ -36,11 +36,11 @@
 (defcustom osx-notify-sound nil
   "Default sound for `osx-notify'."
   :type '(choice (const :tag "System default" nil) file)
-  :group 'applescript)
+  :group 'osa)
 
 (defun osx-emacs-selected-p ()
   "Return t if Emacs is currently selected."
-  (equal (applescript "current application is frontmost") "true"))
+  (equal (osa "current application is frontmost") "true"))
 
 (defun osx-notify (body &optional title subtitle sound)
   "Post a notification using the Notification Center.
@@ -49,7 +49,7 @@ Library/Sounds."
   (let ((title (substring-no-properties (or title "Emacs")))
         (subtitle (substring-no-properties (or subtitle "")))
         (sound (substring-no-properties (or sound osx-notify-sound ""))))
-    (applescript "display notification #{body} with title #{title} \
+    (osa "display notification #{body} with title #{title} \
 subtitle #{subtitle} sound name #{sound}")))
 
 (defun osx-say (text &optional nato)
@@ -74,7 +74,7 @@ subtitle #{subtitle} sound name #{sound}")))
                     (nato-region (point-min) (point-max))
                     (buffer-string))
                 text)))
-    (applescript "say #{text} without waiting until completion")))
+    (osa "say #{text} without waiting until completion")))
 
 (defun osx-summarize (beg end &optional number)
   (interactive
@@ -83,14 +83,14 @@ subtitle #{subtitle} sound name #{sound}")))
      (list (point-min) (point-max))))
   (let* ((number (or number 1))
          (text (buffer-substring-no-properties beg end))
-         (sum (read (applescript "summarize #{text} in #{number}"))))
+         (sum (read (osa "summarize #{text} in #{number}"))))
     (when (called-interactively-p 'interactive)
       (display-message-or-buffer sum))
     sum))
 
 (defun osx-empty-trash (&optional no-confirm)
   (interactive "P")
-  (let* ((items (split-string (read (applescript "\
+  (let* ((items (split-string (read (osa "\
 tell application \"Finder\"
   set temp to name of items in trash
   copy (length of temp) to beginning of temp
@@ -125,7 +125,7 @@ end tell"))
                           do (princ "\n"))
                  (unless (= (length items) count)
                    (princ "......")))))
-      (applescript "ignoring application responses
+      (osa "ignoring application responses
   tell application \"Finder\" to empty the trash
 end ignoring"))))
 
@@ -139,7 +139,7 @@ The return value is a list similar to that of `color-values'."
                                        (or default-color '(65535 65535 65535))
                                        ", ")
                             "}"))
-           (color (read (applescript
+           (color (read (osa
                          "set myColor to choose color default color #{default#s}"
                          ;; XXX: restore old text item delimiters
                          "set AppleScript's text item delimiters to {\":\"}"
@@ -164,11 +164,11 @@ The return value is a list similar to that of `color-values'."
             (when (and LS (string-match "\
 LSHandlerRoleAll = \"\\([^\"\n]+\\)\";\n[ \t]*LSHandlerURLScheme = http;"
                                         LS))
-              (read (applescript "tell application \"Finder\" to \
+              (read (osa "tell application \"Finder\" to \
 get name of application file id #{(match-string 1 LS)}"))))))
     (when default-browser
       `(lambda (url &rest _args)
-         (applescript
+         (osa
           ,(format "tell application %S to (open location \
 #{(substring-no-properties url)}) activate"
                    default-browser))))))
@@ -185,7 +185,7 @@ get name of application file id #{(match-string 1 LS)}"))))))
                   default-directory))))
     (or (not (file-remote-p dir))
         (error "Remote file/directory not supported"))
-    (applescript "set f to POSIX file #{dir}"
+    (osa "set f to POSIX file #{dir}"
                  "tell application \"Finder\""
                  "reveal f"
                  "activate"
@@ -197,7 +197,7 @@ get name of application file id #{(match-string 1 LS)}"))))))
   (let ((dir (expand-file-name default-directory)))
     (or (not (file-remote-p dir))
         (error "Remote file/directory not supported"))
-    (applescript
+    (osa
      "tell application \"Terminal\"
   if not running then
     launch
@@ -223,5 +223,5 @@ end tell")))
   (interactive "P")
   (if arg (osx-terminal) (osx-finder)))
 
-(provide 'AppleScripts)
-;;; AppleScripts.el ends here
+(provide 'osascripts)
+;;; osascripts.el ends here
