@@ -153,25 +153,25 @@ The return value is a list similar to that of `color-values'."
       (setq default-color result)
       result)))
 
+(defun osx-get-default-browser ()
+  "Get the default browser application name."
+  (with-temp-buffer
+    (if (and (zerop (process-file "defaults" nil t nil "read"
+                                  "com.apple.LaunchServices/com.apple.LaunchServices.secure"
+                                  "LSHandlers"))
+             (progn (goto-char (point-min))
+                    (re-search-forward "LSHandlerRoleAll = \"\\([^\"\n]+\\)\";\n[ \t]*LSHandlerURLScheme = http;" nil t)))
+        (read (osa "tell application \"Finder\" to get name of application file id #{(match-string 1)}"))
+      "Safari.app")))
+
 (defun osx-make-browse-url-function ()
   "A `browse-url' function that supports file:/// with anchors."
-  (let ((default-browser
-          (let ((LS (with-temp-buffer
-                      (when (zerop (process-file "defaults" nil t nil
-                                                 "read" "com.apple.LaunchServices"
-                                                 "LSHandlers"))
-                        (buffer-string)))))
-            (when (and LS (string-match "\
-LSHandlerRoleAll = \"\\([^\"\n]+\\)\";\n[ \t]*LSHandlerURLScheme = http;"
-                                        LS))
-              (read (osa "tell application \"Finder\" to \
-get name of application file id #{(match-string 1 LS)}"))))))
-    (when default-browser
-      `(lambda (url &rest _args)
-         (osa
-          ,(format "tell application %S to (open location \
-#{(substring-no-properties url)}) activate"
-                   default-browser))))))
+  (let ((browser (osx-get-default-browser)))
+    (lambda (url &rest _args)
+      (do-applescript
+       (string-to-multibyte
+        (format "tell application %S to (open location %S) activate" browser
+                (substring-no-properties url)))))))
 
 (defun osx-finder ()
   "Open Finder.app and reveal `buffer-file-name' if any."
