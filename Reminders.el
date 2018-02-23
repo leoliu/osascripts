@@ -1,6 +1,6 @@
 ;;; Reminders.el --- Reminders.app                   -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Leo Liu
+;; Copyright (C) 2013-2018  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 1.0
@@ -232,11 +232,11 @@ end tell")))))
                                   (?A 1)
                                   (?B 5)
                                   (?C 9)
-                                  (t 0)))
+                                  (_ 0)))
                      ((pred (lambda (x)
                               (and v (string-match-p "-date\\'" (symbol-name x)))))
                       (float-time (apply #'encode-time (org-parse-time-string v))))
-                     (t v))))
+                     (_ v))))
 
 (defun Reminders-from-org-data (data)
   (let ((r (make-symbol "reminder")))
@@ -273,7 +273,7 @@ end tell")))))
               (1 "[#A] ")
               (5 "[#B] ")
               (9 "[#C] ")
-              (t ""))
+              (_ ""))
             name "\n")
     (when body
       (indent-rigidly (point)

@@ -1,6 +1,6 @@
 ;;; osascripts.el --- collection of smallish OSA scripts  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Leo Liu
+;; Copyright (C) 2013-2018  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 0.6.0

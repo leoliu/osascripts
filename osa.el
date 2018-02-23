@@ -1,6 +1,6 @@
 ;;; osa.el --- OSA script wrapper                    -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Leo Liu
+;; Copyright (C) 2013-2018  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 0.6.0
@@ -86,9 +86,6 @@
      ((cl-every #'stringp lines) (mapconcat 'identity lines "\n"))
      ((not (cdr lines))          (car lines))
      (t                          `(mapconcat 'identity (list ,@lines) "\n")))))
-
-;;;###autoload
-(define-obsolete-function-alias 'applescript 'osa "2015-03-18")
 
 ;;;###autoload
 (defmacro osa (&rest lines)

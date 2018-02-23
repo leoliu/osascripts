@@ -1,6 +1,6 @@
 ;;; Notes.el --- Notes.app                           -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Leo Liu
+;; Copyright (C) 2013-2018  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 0.8.0
@@ -185,10 +185,9 @@ end tell"))))
   (cl-loop for (k v) on p by #'cddr
            collect k
            collect (pcase k
-                     ((pred (lambda (x)
-                              (and v (string-match-p "-date\\'" (symbol-name x)))))
+                     ((guard (and v (string-match-p "-date\\'" (symbol-name k))))
                       (float-time (apply #'encode-time (org-parse-time-string v))))
-                     (t v))))
+                     (_ v))))
 
 (defun Notes-from-org-data (data)
   (let ((n (make-symbol "note")))
