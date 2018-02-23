@@ -53,13 +53,16 @@ end tell"))
 (defun Chrome-reload (&optional tab)
   (interactive (and current-prefix-arg (list (Chrome-read-tab))))
   (osa "tell application #{Chrome-application-name}
-set nil to missing value
+  set nil to missing value
   if #{tab} is missing value then
-    set x to active tab of front window
+    tell active tab of front window to reload
   else
-    set x to first tab of some window whose URL is #{tab}
+    repeat with t in (first tab of windows whose URL is #{tab})
+      if t is not missing value then
+        tell t to reload
+      end if
+    end repeat
   end if
-  tell x to reload
 end tell"))
 
 ;;;###autoload
