@@ -32,8 +32,8 @@
   :type 'string
   :group 'osa)
 
-(defun Chrome-read-tab ()
-  (let ((tabs (split-string (read (osa "
+(defun Chrome-tabs ()
+  (split-string (read (osa "
 tell application #{Chrome-application-name}
   set allTabs to {}
   repeat with w in windows
@@ -44,8 +44,10 @@ tell application #{Chrome-application-name}
   set AppleScript's text item delimiters to {\"----\"}
   return allTabs as text
 end tell"))
-                            "----")))
-    (completing-read "Chrome tab: " tabs nil t)))
+                "----"))
+
+(defun Chrome-read-tab ()
+  (completing-read "Chrome tab: " (Chrome-tabs) nil t))
 
 ;;;###autoload
 (defun Chrome-reload (&optional tab)
