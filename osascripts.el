@@ -171,7 +171,7 @@ The return value is a list similar to that of `color-values'."
       (do-applescript
        (string-to-multibyte
         (format "tell application %S to (open location %S) activate" browser
-                (substring-no-properties url)))))))
+                (substring-no-properties (url-encode-url url))))))))
 
 (defun osx-finder ()
   "Open Finder.app and reveal `buffer-file-name' if any."
